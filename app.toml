@@ -1,0 +1,8 @@
+[grafana]
+timezone = 'UTC'
+
+[grafana-dingtalk]
+token = ''
+at_mobiles = ['18888888888', '17777777777']
+
+
