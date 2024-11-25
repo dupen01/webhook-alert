@@ -25,7 +25,7 @@ def get_latency(url):
     
 
 @router.get('/ltc/{domain}')
-async def ltc(domain):
+async def ltc(domain: str):
     """获取各网址的请求延时
     """
     url = f"https://www.{domain}.com"

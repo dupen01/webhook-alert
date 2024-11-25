@@ -4,18 +4,23 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import tomllib
 import httpx
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter()
 
 
 @router.post('/test', status_code=200)
-async def test(request: Request):
+async def get_grafana_alert_msg_template(request: Request):
     # 读取请求体内容
     body = await request.json()
     # 打印请求体内容
-    print(datetime.now(), json.dumps(body))
-    """
+    logger.info(json.dumps(body))
+"""
     {
     'receiver': 'test', 
     'status': 'firing', 
@@ -58,15 +63,14 @@ async def test(request: Request):
         'state': 'alerting', 
         'message': '**Firing**\n\nValue: [no value]\nLabels:\n - alertname = TestAlert\n - instance = Grafana\nAnnotations:\n - summary = Notification test\nSilence: http://localhost:3000/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTestAlert&matcher=instance%3DGrafana\n'
         }
-    """
-    return {'code': 200, 'msg': 'ok'}
+"""
 
 
 @router.post('/grafana/dingtalk', status_code=204)
-async def test(request: Request):
+async def send_to_dingtalk(request: Request):
     # 读取请求体内容
     received_data = await request.json()
-
+    logger.info(json.dumps(received_data))
     # 获取配置
     cfg = tomllib.load(open('app.toml', 'rb'))
     at_mobiles = cfg['grafana-dingtalk']['at_mobiles']
@@ -117,7 +121,7 @@ async def test(request: Request):
 - **触发值**: {values}
 **告警来源**: Grafana alert
 """
-        print(md_text)
+        logger.info(md_text)
 
         markdown.setdefault('text', md_text)
 
@@ -125,17 +129,15 @@ async def test(request: Request):
         dingtalk_msg.setdefault('msgtype', 'markdown')
         dingtalk_msg.setdefault('markdown', markdown)
         
-        # print(json.dumps(dingtalk_msg))
-        
         # send to dingtalk
         dingtalk_webhook_url = f"https://oapi.dingtalk.com/robot/send?access_token={token}"
         res = httpx.post(dingtalk_webhook_url, data=dingtalk_msg)
 
         if res.status_code == 200:
-            print("Success!")
+            logger.info("Success!")
         else:
-            print(f"An error occurred: {res.status_code}")
+            logger.error(f"An error occurred: {res.status_code}")
         
-        print(res.text)
+        logger.info(res.text)
         
     return None
