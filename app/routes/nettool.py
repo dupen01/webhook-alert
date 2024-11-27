@@ -16,7 +16,7 @@ class Domain(Enum):
 router = APIRouter()
 
 
-def get_latency(url):
+def __get_latency(url) -> int:
     start_time = time.time() * 1000
     with httpx.Client(verify=False, timeout=2.) as client:
         client.get(url=url)
@@ -25,13 +25,13 @@ def get_latency(url):
     
 
 @router.get('/ltc/{domain}')
-async def get_latency(domain: str):
+async def get_latency(domain: str) -> dict[str, int]:
     """获取各网址的请求延时
     """
     url = f"https://www.{domain}.com"
     if domain in Domain:
         try:
-            ltc = get_latency(url)
+            ltc = __get_latency(url)
             return {
                 domain: ltc
             }
